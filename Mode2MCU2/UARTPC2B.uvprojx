@@ -411,11 +411,6 @@
               <FilePath>.\LEDSW.c</FilePath>
             </File>
             <File>
-              <FileName>LEDSW.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\LEDSW.h</FilePath>
-            </File>
-            <File>
               <FileName>UART3_INIT.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\UART3_INIT.c</FilePath>

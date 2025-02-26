@@ -41,13 +41,86 @@ volatile uint8_t colorIndex = 0;
 //        (uint8_t *)"Yellow",(uint8_t *)"Cran", (uint8_t *)"Purple",(uint8_t *)"White"
 //    };
 
-void UART2_Handler(void);
 
-int idle_state = 1; // start off on idle state and change if received data from mcu1
+bool idle_state = true; // start off on idle state and change if received data from mcu1 
+bool firstRun = true; // flag so whenever we reset mcu1, UART handler doesnt get set. 
 
 extern void EnableInterrupts(void);
 extern void WaitForInterrupt(void);
 extern void DisableInterrupts(void);
+void Mode2(void);
+void Mode3(void);
+void Beginning_Prompt(void);
+void System_Init(void);
+
+int main(void) {
+		System_Init();
+		OutCRLF();
+    UART_OutString((uint8_t *)"Welcome to CECS 447 Project 2 - UART");
+    OutCRLF();
+    UART_OutString((uint8_t *)"MCU2");
+    OutCRLF();
+    UART_OutString((uint8_t *)"Waiting for command from MCU1 ...");
+    OutCRLF();		
+		idle_state = true;
+		while(1){
+			WaitForInterrupt();
+	}
+}
+
+void Mode2(void){
+}
+
+void Mode3(void){
+}
+
+void Beginning_Prompt(void){
+}
+
+
+void UART3_Handler(void){
+	if(idle_state){
+		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
+        if ((UART3_FR_R&UART_FR_RXFE) == 0)
+					LED = UART3_DR_R&0xFF;
+					UART_OutString((uint8_t *)"success");
+					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+					idle_state = false; // turn off idle state
+		}
+	}
+}
+
+
+void GPIOPortF_Handler(void)
+{		
+	// simple debouncing code: generate 20ms to 30ms delay
+	for (uint32_t time=0;time<200000;time++) {}
+	if(!idle_state){
+		if(GPIO_PORTF_RIS_R & SW2){
+			colorIndex = (colorIndex + 1) % 8;
+			LED = color_wheel[colorIndex];
+			GPIO_PORTF_ICR_R = SW2;
+			}
+		
+		if(GPIO_PORTF_RIS_R & SW1){ 				
+			OutCRLF();
+			UART3_OutChar(LED);
+			UART_OutString((uint8_t *)" Color sent to MCU1");
+			OutCRLF();
+			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
+			idle_state = true; 
+		}
+	}
+}
+
+void System_Init(void){
+		DisableInterrupts();
+    PLL_Init();               // 50 MHz
+    UART_Init(false, false);  // UART0 -> PC2 at 57,600 bps
+    UART3_INIT(true, false); // UART3 -> MCU1 at 38,400 bps
+    PORTF_INIT();             // Onboard LEDs and switches
+		EnableInterrupts();
+}
 
 //void Mode2(void) {
 //    OutCRLF();
@@ -121,206 +194,8 @@ extern void DisableInterrupts(void);
 //    UART_OutString((uint8_t *)"Exiting Mode 2. Returning to main menu...");
 //    OutCRLF();
 //}
-void UART3_Handler(void){
-  if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
-        if ((UART3_FR_R&UART_FR_RXFE) == 0)
-						idle_state = 0; // turn off idle state
-            LED = UART3_DR_R&0xFF;
-						current_color = LED;
-						//((uint8_t *)"success");
-						switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
-						UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-  }
-}
 
 
-void GPIOPortF_Handler(void)
-{		
-	// simple debouncing code: generate 20ms to 30ms delay
-	for (uint32_t time=0;time<200000;time++) {}
-	
-  if((GPIO_PORTF_RIS_R & SW2) && ((idle_state == 0)))
-	{
-		GPIO_PORTF_ICR_R = SW2;
-		colorIndex = (colorIndex + 1) % 8;
-		LED = color_wheel[colorIndex];
-		OutCRLF();
-		UART_OutString((uint8_t*)"");
-		OutCRLF();
-		UART_OutString((uint8_t*)"Mode 2 MCU2");
-		OutCRLF();
-		UART_OutString((uint8_t*)"In color wheel state");
-		OutCRLF();
-		UART_OutString((uint8_t*)"Please press sw2 to go through the colors");
-		OutCRLF();
-		UART_OutString((uint8_t*)"in the following color wheel: Dark, Red,");
-		OutCRLF();
-		UART_OutString((uint8_t*)"Green, Blue, Yellow, Cran, Purple, White.");
-		OutCRLF();
-		UART_OutString((uint8_t*)"Once a color is selected, press sw1 to send the color to MCU1");
-							switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
-	}
-	
-	if((GPIO_PORTF_RIS_R & SW1) && ((idle_state == 0)))
-	{
-		idle_state = 1; // turn on idle state whenever we send 
-	  OutCRLF();
-		UART_OutString((uint8_t*)"");
-		OutCRLF();
-		UART_OutString((uint8_t*)"MCU Mode 2");
-						switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
-		OutCRLF();
-		UART_OutString((uint8_t*)"Waiting for color code from MCU1");
-		GPIO_PORTF_ICR_R = SW1;
-		UART3_OutChar(LED);		
-	}
-}
 
-// ---------------------------------------------------------------------
-// main()
-// ---------------------------------------------------------------------
-int main(void) {
-		DisableInterrupts();
-    PLL_Init();               // 50 MHz
-    UART_Init(false, false);  // UART0 -> PC2 at 57,600 bps
-    UART3_INIT(true, false); // UART3 -> MCU1 at 38,400 bps
-    PORTF_INIT();             // Onboard LEDs and switches
-		EnableInterrupts();
-		OutCRLF();
-    UART_OutString((uint8_t *)"Welcome to CECS 447 Project 2 - UART");
-    OutCRLF();
-    UART_OutString((uint8_t *)"MCU2");
-    OutCRLF();
-    UART_OutString((uint8_t *)"Waiting for command from MCU1 ...");
-    OutCRLF();
 
-    // Show the initial message for MCU2 on PC2
-	while(1){
-		WaitForInterrupt();
-		
-	}
-    // Now just wait for a '2' from MCU1 to enter Mode2
-//    while(1) {
-//        if(UART3_DataAvailable()) {
-//					UART_OutString((uint8_t *)"Welcome to CECS 447 Project 2 - UART");
-//            char cmd = UART3_InChar();
-//            // If MCU1 sends the character '2', that indicates "enter Mode2"
-////            if(cmd == '2') {
-////               // Mode2();
-////                // After Mode2 finishes, show the initial message again
-////                OutCRLF();
-////                UART_OutString((uint8_t *)"Welcome to CECS 447 Project 2 - UART");
-////                OutCRLF();
-////                UART_OutString((uint8_t *)"MCU2");
-////                OutCRLF();
-////                UART_OutString((uint8_t *)"Waiting for command from MCU1 ...");
-////                OutCRLF();
-////            }
-//        }
-//    }
-}
+

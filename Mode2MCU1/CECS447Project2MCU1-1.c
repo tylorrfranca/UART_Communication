@@ -37,6 +37,7 @@ alongside change the brightness through the terra term program.
 // TODO: define all colors in the color wheel
 const	uint8_t color_wheel[8] = {RED,BLUE,GREEN,PURPLE,WHITE,DARK,YELLOW,CRAN};
 volatile int brightness = 100;
+bool idle_state = false; 
 
 // TODO: define bit addresses for the onboard three LEDs and two switches
 #define LEDs 		(0x0C)
@@ -69,11 +70,11 @@ int main(void){
   UART0_Init(false,false);  // for PC<->MCU1
   UART2_Init(true,false);  // for MCU1<->MCU2
   PORTF_INIT();  // Initialize the onboard three LEDs and two push buttons
-	EnableInterrupts();
+	
   while(1){
 		LED = DARK;
 		currentColor = DARK;
-		// displays the main menu 
+		// displays the main menu		
 		Display_Menu(); 
 		switch(UART_InChar()){
 			case '1':
@@ -101,7 +102,6 @@ void Mode1(void){
 				LEDColorMenu();
 				break;
 			case '2':
-				PWM_INIT();
 				BrightnessMenu();
 				break;
 			case '3':
@@ -120,13 +120,10 @@ void Mode1(void){
 }
 
 void Mode2(void){
-	PWM_INIT();
+	EnableInterrupts();
 	onScreen = true; 
 	mode2Display();
 	while(onScreen){
-
-//		WaitForInterrupt();
-//		waitDisplay();
 		WaitForInterrupt();
 	switch(currentColor){
 	case DARK:
@@ -364,39 +361,43 @@ void setColorAndBrightness(void){
 }
 
 void GPIOPortF_Handler(void) {
-    if (GPIO_PORTF_RIS_R & 0x01) {  // SW2 Pressed
-        for(int i = 0; i < 1000000; i++); // Delay for debounce
-				colorIndex = (colorIndex + 1) % 8;
-				currentColor = color_wheel[colorIndex];
-				setColorAndBrightness();
-				GPIO_PORTF_ICR_R = 0x01;  // Acknowledge flag
-    }
-
-    if (GPIO_PORTF_RIS_R & 0x10) {  // SW1 Pressed
-        for(int i = 0; i < 1000000; i++); // Delay for debounce
-				OutCRLF();
-				UART2_OutChar(currentColor);
-				UART_OutString((uint8_t *)" Color sent to MCU2");
-				OutCRLF();
-				GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
+		for(int i = 0; i < 100000; i++){}; // Delay for debounce
+		if(!idle_state){
+			if (GPIO_PORTF_RIS_R & 0x01){  // SW2 Pressed
+					colorIndex = (colorIndex + 1) % 8;
+					currentColor = color_wheel[colorIndex];
+					LED = currentColor;
+					GPIO_PORTF_ICR_R = 0x01;  // Acknowledge flag
+			}
+			if (GPIO_PORTF_RIS_R & 0x10) {  // SW1 Pressed
+					OutCRLF();
+					UART2_OutChar(currentColor);
+					UART_OutString((uint8_t *)" Color sent to MCU2");
+					OutCRLF();
+					GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
+					idle_state = true; 
+			}
 		}
 	}
 
-void UART0_Handler(void){
+//void UART0_Handler(void){
 //  if(UART0_RIS_R&UART_RIS_RXRIS){       // received one item
 //		if ((UART2_FR_R&UART_FR_RXFE) == 0)
 //		  LED = UART0_DR_R&RED;//		  led_on = UART1_DR_R&RED;
 //    UART1_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 //  }
 			
-}
+//}
 
 void UART2_Handler(void){
-  if(UART2_RIS_R&UART_RIS_RXRIS){       // received one item 
-		if ((UART2_FR_R&UART_FR_RXFE) == 0)
-			currentColor = UART2_DR_R & 0xFF;
-			setColorAndBrightness();
-    UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+  if(idle_state){       // received one item 
+		if(UART2_RIS_R&UART_RIS_RXRIS){
+			if ((UART2_FR_R&UART_FR_RXFE) == 0)
+				currentColor = UART2_DR_R & 0xFF;
+				LED = currentColor;
+				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+				idle_state = false; 
+		}
   }
 }
 

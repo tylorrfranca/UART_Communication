@@ -20,8 +20,8 @@ void UART2_Init(bool RxInt, bool TxInt){
    	while((SYSCTL_RCGC2_R&SYSCTL_RCGC2_GPIOD) == 0){}; 
 		UART2_CTL_R = 0;
 	
-  UART2_IBRD_R = 81;                    // IBRD = int(16,000,000 / (16 * 115,200)) = int(8.68)
-  UART2_FBRD_R = 24;                     // FBRD = int(0.68 * 64 + 0.5) = 44
+  UART2_IBRD_R = 81;                    // IBRD = int(50,000,000 / (16 * 38400)) = int(81.38)
+  UART2_FBRD_R = 24;                     // FBRD = int(0.04 * 64 + 0.5) = 3.1
                                         // 8 bit word length (no parity bits, one stop bit, FIFOs)
   UART2_LCRH_R = UART_LCRH_WLEN_8;
 	if (RxInt) {

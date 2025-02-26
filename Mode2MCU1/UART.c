@@ -46,7 +46,7 @@ void UART0_Init(bool RxInt, bool TxInt){
   SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0; // activate UART0
   SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOA; // activate port A
   UART0_CTL_R = 0;                      // disable UART
-	UART0_IBRD_R = 54;                    // IBRD = int(50,000,000 / (16 * 57,600)) = int(54.2535)
+	UART0_IBRD_R = 54;                    // IBRD = int(50,000,00 / (16 * 57,600)) = int(54.2535)
   UART0_FBRD_R = 16;                     // FBRD = int(0.2535 * 64 + 0.5) = 16
                                         // 8 bit word length (no parity bits, one stop bit, FIFOs)
 //  UART0_LCRH_R = (UART_LCRH_WLEN_8|UART_LCRH_FEN);
