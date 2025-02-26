@@ -123,6 +123,7 @@ void Mode2(void){
 	EnableInterrupts();
 	onScreen = true; 
 	mode2Display();
+	UART2_OutChar('2');
 	while(onScreen){
 		WaitForInterrupt();
 	switch(currentColor){
