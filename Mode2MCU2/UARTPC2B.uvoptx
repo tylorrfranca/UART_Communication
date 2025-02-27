@@ -119,10 +119,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -196,9 +192,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>75</LineNumber>
+          <LineNumber>115</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>2946</Address>
+          <Address>1980</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -207,7 +203,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\75</Expression>
+          <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\115</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
