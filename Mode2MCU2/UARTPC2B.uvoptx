@@ -196,9 +196,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>84</LineNumber>
+          <LineNumber>75</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>1720</Address>
+          <Address>2946</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -207,23 +207,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\84</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>96</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\75</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

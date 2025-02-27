@@ -44,6 +44,9 @@ volatile uint8_t colorIndex = 0;
 
 bool idle_state = true; // start off on idle state and change if received data from mcu1 
 bool firstRun = true; // flag so whenever we reset mcu1, UART handler doesnt get set. 
+bool Mode2Flag = false;
+bool Mode3Flag = false;
+bool color_sent = false;
 
 extern void EnableInterrupts(void);
 extern void WaitForInterrupt(void);
@@ -64,12 +67,39 @@ int main(void) {
     OutCRLF();		
 		idle_state = true;
 		while(1){
-			WaitForInterrupt();
+			switch(UART3_InChar()){
+				case '2':
+					Mode2();
+					break;
+				default:
+					break;
+			}
+				
+			
 	}
 }
 
 void Mode2(void){
+	EnableInterrupts();
+	Mode2Flag = true;
+	while(Mode2Flag){
+	while(idle_state){
+	WaitForInterrupt();
+	}
+	if (Mode2Flag == false){
+		LED = DARK;
+		return;
+	}
+	while(!color_sent&&Mode2Flag){
+		WaitForInterrupt();
+	}
+		if (Mode2Flag == false){
+		LED = DARK;
+		return;
+	}
 }
+}
+
 
 void Mode3(void){
 }
@@ -79,22 +109,26 @@ void Beginning_Prompt(void){
 
 
 void UART3_Handler(void){
+if (Mode2Flag){
 	if(idle_state){
 		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
         if ((UART3_FR_R&UART_FR_RXFE) == 0)
+					if ((UART3_DR_R&0xFF) == '^'){
+						Mode2Flag = false;					
+					}
 					LED = UART3_DR_R&0xFF;
 					UART_OutString((uint8_t *)"success");
 					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 					idle_state = false; // turn off idle state
+			}
 		}
 	}
 }
-
-
 void GPIOPortF_Handler(void)
-{		
-	// simple debouncing code: generate 20ms to 30ms delay
-	for (uint32_t time=0;time<200000;time++) {}
+{	
+// simple debouncing code: generate 20ms to 30ms delay
+for (uint32_t time=0;time<200000;time++) {}
+if (Mode2Flag){	
 	if(!idle_state){
 		if(GPIO_PORTF_RIS_R & SW2){
 			colorIndex = (colorIndex + 1) % 8;
@@ -109,17 +143,18 @@ void GPIOPortF_Handler(void)
 			OutCRLF();
 			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
 			idle_state = true; 
+			color_sent = true;
 		}
 	}
 }
-
+}
 void System_Init(void){
 		DisableInterrupts();
     PLL_Init();               // 50 MHz
     UART_Init(false, false);  // UART0 -> PC2 at 57,600 bps
     UART3_INIT(true, false); // UART3 -> MCU1 at 38,400 bps
     PORTF_INIT();             // Onboard LEDs and switches
-		EnableInterrupts();
+		//EnableInterrupts();
 }
 
 //void Mode2(void) {
