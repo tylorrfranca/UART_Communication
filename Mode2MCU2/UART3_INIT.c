@@ -17,7 +17,7 @@
 // Output: none
 void UART3_INIT(bool RxInt, bool TxInt){
   SYSCTL_RCGCUART_R |= SYSCTL_RCGCUART_R3; // activate UART1
-  SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R2; // activate port B
+  SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R2; // activate port C
 	while((SYSCTL_RCGCGPIO_R&SYSCTL_RCGCGPIO_R2) == 0){}; 
 		
   UART3_CTL_R = 0;                     // reset UART1
