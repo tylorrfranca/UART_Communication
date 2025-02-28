@@ -1,13 +1,13 @@
 /*
-Project1Part1
+Project2MCU2Mode2
 CECS447Project2MCU2-1.c
 Runs on LM4F120/TM4C123
 Starter File for CECS 447 Project 2 UART Communications
 Project Group Number: 1
 Team Members : Ivan Martinez, Anthony Keroles, Diego Davalos, Tylor Franca Pires
-Date: 02/13/2025
-File Description : This program will set up a pc1 <-> mcu1 connection that will allow us to turn on the led with different colors
-alongside change the brightness through the terra term program.
+Date: 02/28/2025
+File Description : This program will set up a pc2 <-> mcu2 connection that will allow us to connect our pc through uart0. We also connect mcu2 to mcu1 through uart3
+that will allow us to change the LED colors thorugh the onboard switches and will update the colors on our pc display.
 */
 
 #include "tm4c123gh6pm.h"
@@ -163,7 +163,6 @@ void System_Init(void){
     UART_Init(false, false);  // UART0 -> PC2 at 57,600 bps
     UART3_INIT(true, false); // UART3 -> MCU1 at 38,400 bps
     PORTF_INIT();             // Onboard LEDs and switches
-		//EnableInterrupts();
 }
 
 
