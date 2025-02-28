@@ -5,9 +5,10 @@ Runs on LM4F120/TM4C123
 Starter File for CECS 447 Project 2 UART Communications
 Project Group Number: 1
 Team Members : Ivan Martinez, Anthony Keroles, Diego Davalos, Tylor Franca Pires
-Date: 02/13/2025
-File Description : This program will set up a pc1 <-> mcu1 connection that will allow us to turn on the led with different colors
-alongside change the brightness through the terra term program.
+Date: 02/28/2025
+File Description : This program facilitates communication between a PC and MCU1 using UART0, as well as 
+MCU1-to-MCU2 communication via UART2. The system supports LED control, brightness adjustment, 
+and an interactive color selection mode.
 */
 
 #include "PLL.h"
