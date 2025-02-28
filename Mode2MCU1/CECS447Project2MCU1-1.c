@@ -69,7 +69,7 @@ bool onScreen;
 int main(void){
 	DisableInterrupts();
   PLL_Init();
-  UART0_Init(false,false);  // for PC<->MCU1
+  UART0_Init(true,false);  // for PC<->MCU1
   UART2_Init(true,false);  // for MCU1<->MCU2
   PORTF_INIT();  // Initialize the onboard three LEDs and two push buttons
 	
@@ -357,17 +357,18 @@ void GPIOPortF_Handler(void) {
 		}
 	}
 
-//void UART0_Handler(void){
-//  if(UART0_RIS_R&UART_RIS_RXRIS){       // received one item
-//		if ((UART0_FR_R&UART_FR_RXFE) == 0)
-//		   if(UART0_DR_R == 0x32){
-//					Mode2Flag = false;
-//					UART2_OutChar('^');
-//			 }
-//    UART0_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-//  }
-//			
-//}
+void UART0_Handler(void){
+  if(UART0_RIS_R&UART_RIS_RXRIS){       // received one item
+		if ((UART0_FR_R&UART_FR_RXFE) == 0)
+		   if((UART0_DR_R & 0xFF) == '^'){
+					UART2_OutChar('^');
+					Mode2Flag = false;
+					
+			 }
+    UART0_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+  }
+			
+}
 
 void UART2_Handler(void){
 	for(int i = 0; i < 200000; i++){}; // Delay for debounce
