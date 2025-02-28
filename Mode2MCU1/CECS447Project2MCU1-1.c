@@ -19,14 +19,14 @@ alongside change the brightness through the terra term program.
 #define MAX_STR_LEN 20
 
 // TODO: define bit values for all Colors 
-#define DARK 		(0x00)
-#define RED 		(0x02)
-#define BLUE 		(0x04)
-#define GREEN 	(0x08)
-#define PURPLE 	(0x06)
-#define YELLOW  (0x0A)
-#define WHITE 	(0x0E)
-#define CRAN 		(0x0C)
+#define DARK 		0x00
+#define RED 		0x02
+#define BLUE 		0x04
+#define GREEN 	0x08
+#define PURPLE 	0x06
+#define YELLOW  0x0A
+#define WHITE 	0x0E
+#define CRAN 		0x0C
 
 
 #define LED (*((volatile unsigned long*)0x40025038)) // address for green,blue,red LEDS
@@ -37,7 +37,6 @@ alongside change the brightness through the terra term program.
 // TODO: define all colors in the color wheel
 const	uint8_t color_wheel[8] = {DARK,RED,GREEN,BLUE,YELLOW,CRAN,PURPLE,WHITE};
 volatile int brightness = 100;
-bool idle_state = false; 
 bool color_recieved = false; 
 bool color_sent = false; 
 bool Mode2Flag = false; 
@@ -138,11 +137,10 @@ void Mode2(void){
 			WaitForInterrupt();
 		}
 		for(int i = 0; i < 8; i++){
-			if(currentColor == color_wheel[i]){
+			if(LED == color_wheel[i]){
 				colorIndex = i; 
 			}
 		}
-		LED = color_wheel[colorIndex];
 	}
 	
 }
@@ -346,13 +344,12 @@ void GPIOPortF_Handler(void) {
 			if (GPIO_PORTF_RIS_R & 0x01){  // SW2 Pressed
 					GPIO_PORTF_ICR_R = 0x01;  // Acknowledge flag
 					colorIndex = (colorIndex + 1) % 8;
-					currentColor = color_wheel[colorIndex];
-					LED = currentColor;	
+					LED = color_wheel[colorIndex];
 			}
 			if (GPIO_PORTF_RIS_R & 0x10) {  // SW1 Pressed
 					GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag 
 					OutCRLF();
-					UART2_OutChar(currentColor);
+					UART2_OutChar(LED);
 					UART_OutString((uint8_t *)" Color sent to MCU2");
 					OutCRLF(); 
 					color_sent = true;
@@ -377,8 +374,8 @@ void UART2_Handler(void){
   if(!color_recieved && Mode2Flag){       // received one item 
 		if(UART2_RIS_R&UART_RIS_RXRIS){
 			if ((UART2_FR_R&UART_FR_RXFE) == 0)
+				LED = UART2_DR_R & 0xFF;
 				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-				currentColor = UART2_DR_R & 0xFF;
 				color_recieved = true;
 		}
   }

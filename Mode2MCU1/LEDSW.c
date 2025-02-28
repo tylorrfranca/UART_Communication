@@ -22,7 +22,7 @@ File Description : This file initilizes the LEDS, onboard switches, and pwm that
 #define PF_INT_MASK 0x40000000 // value to enable bit 30 in port f interrupt
 #define PF_LONG_MASK 0x000FFFF0 //mask for port F values
 #define PORTF0_LOCK 0x4C4F434B // value used to unlock portf PF0
-#define LED (*((volatile unsigned long*)0x40025038)) // address for green,blue,red LEDS
+#define LEDs (*((volatile unsigned long*)0x40025038)) // address for green,blue,red LEDS
 #define LED_OFF 0x00 //turn off all LEDs
 #define RED 0x02 // mask value for red onboard LED
 #define BLUE 0x04  // mask value for blue onboard LED
