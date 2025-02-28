@@ -42,11 +42,12 @@ volatile uint8_t colorIndex = 0;
 //    };
 
 
-bool idle_state = true; // start off on idle state and change if received data from mcu1 
 bool firstRun = true; // flag so whenever we reset mcu1, UART handler doesnt get set. 
 bool Mode2Flag = false;
 bool Mode3Flag = false;
 bool color_sent = false;
+bool color_recieved = false; 
+
 
 extern void EnableInterrupts(void);
 extern void WaitForInterrupt(void);
@@ -65,7 +66,6 @@ int main(void) {
     OutCRLF();
     UART_OutString((uint8_t *)"Waiting for command from MCU1 ...");
     OutCRLF();		
-		idle_state = true;
 		while(1){
 			switch(UART3_InChar()){
 				case '2':
@@ -88,21 +88,25 @@ void Mode2(void){
 	EnableInterrupts();
 	Mode2Flag = true;
 	while(Mode2Flag){
-	while(idle_state){
-	WaitForInterrupt();
-	}
-	if (Mode2Flag == false){
-		LED = DARK;
-		return;
-	}
-	while(!color_sent&&Mode2Flag){
-		WaitForInterrupt();
-	}
+		color_recieved = false;
+		while(!color_recieved && Mode2Flag){
+			WaitForInterrupt();
+		}
+		for(int i = 0; i < 8; i++){
+			if(LED == color_wheel[i]){
+				colorIndex = i;
+			}
+		}
+		
+		color_sent = false;
+		while(!color_sent && Mode2Flag){
+			WaitForInterrupt();
+		}
 		if (Mode2Flag == false){
-		LED = DARK;
+			LED = DARK;
 		return;
+		}
 	}
-}
 }
 
 
@@ -117,65 +121,15 @@ void UART3_Handler(void){
 // simple debouncing code: generate 20ms to 30ms delay
 for (uint32_t time=0;time<200000;time++) {}
 if (Mode2Flag){
-	if(idle_state){
+	if(!(color_recieved) && Mode2Flag){
 		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
         if ((UART3_FR_R&UART_FR_RXFE) == 0)
 					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 					if ((UART3_DR_R&0xFF) == '^'){
 						Mode2Flag = false;					
-					}
+					}					
 					LED = UART3_DR_R&0xFF;
-					OutCRLF();
-					UART_OutString((uint8_t*)"Mode 2 MCU2");
-					OutCRLF();
-					UART_OutString((uint8_t*)"In color wheel state");
-					OutCRLF();
-					UART_OutString((uint8_t*)"Please press sw2 to go through the colors");
-					OutCRLF();
-					UART_OutString((uint8_t*)"in the following color wheel: Dark, Red,");
-					OutCRLF();
-					UART_OutString((uint8_t*)"Green, Blue, Yellow, Cran, Purple, White.");
-					OutCRLF();
-					UART_OutString((uint8_t*)"Once a color is selected, press sw1 to send the color to MCU1");
-					OutCRLF();
-					switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
-					idle_state = false; // turn off idle state
-					color_sent = false;
+					color_recieved = true;
 			}
 		}
 	}
@@ -184,48 +138,11 @@ void GPIOPortF_Handler(void)
 {	
 // simple debouncing code: generate 20ms to 30ms delay
 for (uint32_t time=0;time<200000;time++) {}
-if (Mode2Flag){	
-	if(!idle_state){
+if (!color_sent && Mode2Flag){	
 		if(GPIO_PORTF_RIS_R & SW2){
 			GPIO_PORTF_ICR_R = SW2;
 			colorIndex = (colorIndex + 1) % 8;
 			LED = color_wheel[colorIndex];
-			switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
 			}
 		
 		if(GPIO_PORTF_RIS_R & SW1){ 		
@@ -234,50 +151,13 @@ if (Mode2Flag){
 			UART3_OutChar(LED);
 			OutCRLF();
 			UART_OutString((uint8_t *)" Mode 2 MCU2");
-			switch(LED){
-							case GREEN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Green");
-								break;
-							case RED:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Red");
-								break;
-							case BLUE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Blue");
-								break;
-							case DARK:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Dark");
-								break;
-							case YELLOW:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Yellow");
-								break;
-							case CRAN:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Cran");
-								break;
-							case PURPLE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: Purple");
-								break;
-							case WHITE:
-							OutCRLF();
-							UART_OutString((uint8_t*)" Current Color: White");
-								break;
-							default:
-								break;
-						}
 			OutCRLF();
 			UART_OutString((uint8_t *)" Waiting for color code from MCU1...");
-			idle_state = true; 
 			color_sent = true;
 		}
 	}
 }
-}
+
 void System_Init(void){
 		DisableInterrupts();
     PLL_Init();               // 50 MHz
@@ -286,3 +166,23 @@ void System_Init(void){
     PORTF_INIT();             // Onboard LEDs and switches
 		//EnableInterrupts();
 }
+
+
+
+
+
+
+//					//LED = current_color;
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"Mode 2 MCU2");
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"In color wheel state");
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"Please press sw2 to go through the colors");
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"in the following color wheel: Dark, Red,");
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"Green, Blue, Yellow, Cran, Purple, White.");
+//					OutCRLF();
+//					UART_OutString((uint8_t*)"Once a color is selected, press sw1 to send the color to MCU1");
+//					OutCRLF();
