@@ -96,7 +96,10 @@ void PWM_INIT(void){
 }
 
 void PWM_DISABLE(void){
- GPIO_PORTF_AFSEL_R &= ~0x0E;
+	GPIO_PORTF_AFSEL_R &= ~0x0E;                     // Disable alternate function for PF1-3
+  GPIO_PORTF_PCTL_R  &= ~0x0000FFF0;                 // Clear PCTL bits for PF1-3
+  GPIO_PORTF_AMSEL_R &= ~0x0E;                     // Disable analog functionality
+  GPIO_PORTF_DEN_R |= 0x0E;                        // Enable digital function for PF1-3
 }
 
 bool PWM_STATUS(void){

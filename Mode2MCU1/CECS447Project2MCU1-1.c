@@ -36,6 +36,11 @@ alongside change the brightness through the terra term program.
 
 // TODO: define all colors in the color wheel
 const	uint8_t color_wheel[8] = {DARK,RED,GREEN,BLUE,YELLOW,CRAN,PURPLE,WHITE};
+const uint8_t *colorNames[] = {
+        (uint8_t*)"Dark", (uint8_t*)"Red",   (uint8_t*)"Green", (uint8_t*)"Blue",
+        (uint8_t*)"Yellow",(uint8_t*)"Cran", (uint8_t*)"Purple",(uint8_t*)"White"
+    };
+
 volatile int brightness = 100;
 bool color_recieved = false; 
 bool color_sent = false; 
@@ -53,7 +58,7 @@ void Mode1(void);
 void Mode2(void);
 void Mode3(void);
 void Display_Menu(void);
-
+void mode2IdleDisplay(void);
 void mode1Menu(void);
 void LEDColorMenu(void);
 void BrightnessMenu(void);
@@ -117,22 +122,26 @@ void Mode1(void){
 				break; 	
 	}
 	OutCRLF();
+	LED = DARK;
 	
 }
 }
 
 void Mode2(void){
+	PWM_DISABLE();
+	PORTF_INIT();
 	EnableInterrupts();
 	Mode2Flag = true; 
-	mode2Display();
 	UART2_OutChar('2');
 	while(Mode2Flag){
-		color_sent = false;  
+		color_sent = false; 
+		mode2Display();
 		while(!color_sent && Mode2Flag){
 			WaitForInterrupt();
 		}
 		
 		color_recieved = false;
+		mode2IdleDisplay();
 		while(!color_recieved && Mode2Flag){
 			WaitForInterrupt();
 		}
@@ -219,7 +228,19 @@ void mode2Display(void){
 	OutCRLF();
 	UART_OutString((uint8_t *)" Once a color is selected, press sw1 to send the color to MCU2");
   OutCRLF();
+	UART_OutString((uint8_t *)" Current Color: ");
+	UART_OutString((uint8_t *) colorNames[colorIndex]);
 	OutCRLF();
+};
+
+void mode2IdleDisplay(void){
+	OutCRLF();
+  UART_OutString((uint8_t *)" Mode Two MCU1: press ^ to exit this mode at any time");
+  OutCRLF();
+	UART_OutString((uint8_t *)" Current Color: ");
+	UART_OutString((uint8_t *) colorNames[colorIndex]);
+	OutCRLF();
+	UART_OutString((uint8_t *)" Waiting for color code from MCU2...");
 };
 
 void waitDisplay(void){
@@ -235,8 +256,6 @@ void waitDisplay(void){
 }
 
 void LEDColorMenu(void){
-	bool onLEDScreen = true;
-	while(onLEDScreen){
 	OutCRLF();
   UART_OutString((uint8_t *)" Please Select a color from the following list:");
 	OutCRLF();
@@ -275,6 +294,12 @@ void LEDColorMenu(void){
 		OutCRLF();
 		UART_OutString((uint8_t *)" Cran LED is on");
 		break;
+	case 'y':
+		LED = YELLOW;
+		currentColor = YELLOW;
+		OutCRLF();
+		UART_OutString((uint8_t *)" Yellow LED is on");
+	break;
 	case 'p':
 		LED = PURPLE;
 		currentColor = PURPLE;
@@ -287,15 +312,11 @@ void LEDColorMenu(void){
 		OutCRLF();
 		UART_OutString((uint8_t *)" White LED is on");
 		break;
-	case 'x':
-		onLEDScreen = false;
-		break;
 	default:
 		break; 
 	}
 	PWM_INIT();
 	setColorAndBrightness();
-	}
 }
 
 void BrightnessMenu(){
@@ -345,12 +366,15 @@ void GPIOPortF_Handler(void) {
 					GPIO_PORTF_ICR_R = 0x01;  // Acknowledge flag
 					colorIndex = (colorIndex + 1) % 8;
 					LED = color_wheel[colorIndex];
+				  OutCRLF();
+					UART_OutString((uint8_t *)" Current Color: ");
+					UART_OutString((uint8_t *) colorNames[colorIndex]);
+					OutCRLF();
 			}
 			if (GPIO_PORTF_RIS_R & 0x10) {  // SW1 Pressed
 					GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag 
 					OutCRLF();
 					UART2_OutChar(LED);
-					UART_OutString((uint8_t *)" Color sent to MCU2");
 					OutCRLF(); 
 					color_sent = true;
 			}
