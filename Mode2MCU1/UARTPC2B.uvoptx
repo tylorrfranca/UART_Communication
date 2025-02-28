@@ -201,7 +201,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -217,7 +217,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -233,7 +233,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -249,7 +249,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -265,7 +265,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -281,7 +281,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -297,7 +297,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\373</Expression>
         </Bp>
@@ -313,7 +313,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\CECS447Project2MCU1-1.c</Filename>
+          <Filename>C:\Users\Tylor\Desktop\CECS447\UART\Mode2MCU1\CECS447Project2MCU1-1.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\UARTPC2B\CECS447Project2MCU1-1.c\374</Expression>
         </Bp>
@@ -532,18 +532,6 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\CECS447Project2MCU1-1.c</PathWithFileName>
-      <FilenameWithoutPath>CECS447Project2MCU1-1.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>1</GroupNumber>
-      <FileNumber>5</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
       <PathWithFileName>.\LEDSW.c</PathWithFileName>
       <FilenameWithoutPath>LEDSW.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
@@ -551,7 +539,7 @@
     </File>
     <File>
       <GroupNumber>1</GroupNumber>
-      <FileNumber>6</FileNumber>
+      <FileNumber>5</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -563,7 +551,7 @@
     </File>
     <File>
       <GroupNumber>1</GroupNumber>
-      <FileNumber>7</FileNumber>
+      <FileNumber>6</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -575,13 +563,25 @@
     </File>
     <File>
       <GroupNumber>1</GroupNumber>
-      <FileNumber>8</FileNumber>
+      <FileNumber>7</FileNumber>
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\UART2.h</PathWithFileName>
       <FilenameWithoutPath>UART2.h</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>1</GroupNumber>
+      <FileNumber>8</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>.\UARTmcu1.c</PathWithFileName>
+      <FilenameWithoutPath>UARTmcu1.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

@@ -401,11 +401,6 @@
               <FilePath>.\UART.c</FilePath>
             </File>
             <File>
-              <FileName>CECS447Project2MCU1-1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\CECS447Project2MCU1-1.c</FilePath>
-            </File>
-            <File>
               <FileName>LEDSW.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LEDSW.c</FilePath>
@@ -424,6 +419,11 @@
               <FileName>UART2.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\UART2.h</FilePath>
+            </File>
+            <File>
+              <FileName>UARTmcu1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\UARTmcu1.c</FilePath>
             </File>
           </Files>
         </Group>
