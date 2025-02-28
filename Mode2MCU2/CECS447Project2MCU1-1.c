@@ -124,12 +124,16 @@ if (Mode2Flag){
 	if(!(color_recieved) && Mode2Flag){
 		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
         if ((UART3_FR_R&UART_FR_RXFE) == 0)
-					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-					if ((UART3_DR_R&0xFF) == '^'){
-						Mode2Flag = false;					
+					if ((UART3_DR_R&0xFF) == 0x5E){
+						Mode2Flag = false;	
+						OutCRLF();
+						UART_OutString((uint8_t *)" ^ key was received");
+						
 					}					
 					LED = UART3_DR_R&0xFF;
 					color_recieved = true;
+					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+
 			}
 		}
 	}
