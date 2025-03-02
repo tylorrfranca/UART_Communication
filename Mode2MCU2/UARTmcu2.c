@@ -70,6 +70,9 @@ int main(void) {
 				case '2':
 					Mode2();
 					break;
+				case '3':
+					Mode3();
+				break;
 				default:
 					break;
 			}					
@@ -105,9 +108,6 @@ void Mode2(void){
 
 
 void Mode3(void){
-}
-
-void Beginning_Prompt(void){
 }
 
 
