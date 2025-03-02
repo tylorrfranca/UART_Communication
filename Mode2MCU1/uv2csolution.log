@@ -1,0 +1,9 @@
+1 out of 1 target(s) converted
+Created solution: C:/Users/Tylor/Desktop/CECS447/UART/Mode2MCU1/UARTPC2B.csolution.yml
+With projects:
+- C:/Users/Tylor/Desktop/CECS447/UART/Mode2MCU1/UARTPC2B.cproject.yml
+Error: 0 error(s), 1 warning(s):
+Warnings:
+	Fix compiler version (6.21.0) is configured in the uVision project.
+	However 6.22.0, the earliest version available through vcpkg,
+	is specified in the generated vcpkg-configuration.json and csolution file.

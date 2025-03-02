@@ -1,6 +1,6 @@
 /*
-Project1Part1
-CECS447Project2MCU1-1.c
+Project 2 Part 1 & 2
+UARTmcu1.c
 Runs on LM4F120/TM4C123
 Starter File for CECS 447 Project 2 UART Communications
 Project Group Number: 1

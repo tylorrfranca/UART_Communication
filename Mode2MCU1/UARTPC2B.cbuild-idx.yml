@@ -1,0 +1,18 @@
+build-idx:
+  generated-by: csolution version 2.8.0
+  csolution: UARTPC2B.csolution.yml
+  tmpdir: tmp
+  cprojects:
+    - cproject: UARTPC2B.cproject.yml
+  cbuilds:
+    - cbuild: UARTPC2B+UARTPC2B.cbuild.yml
+      project: UARTPC2B
+      configuration: +UARTPC2B
+      messages:
+        info:
+          - UARTPC2B.cbuild-pack.yml - file is already up-to-date
+          - UARTPC2B+UARTPC2B.cbuild-run.yml - file is already up-to-date
+          - UARTPC2B+UARTPC2B.cbuild.yml - file is already up-to-date
+      packs-unused:
+        - pack: ARM::CMSIS-DSP@1.15.0
+        - pack: ARM::CMSIS-NN@4.1.0
