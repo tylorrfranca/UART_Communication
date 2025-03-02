@@ -1,6 +1,6 @@
 /*
 Project2MCU2Mode2
-CECS447Project2MCU2-1.c
+UARTmcu2.c
 Runs on LM4F120/TM4C123
 Starter File for CECS 447 Project 2 UART Communications
 Project Group Number: 1
@@ -123,17 +123,16 @@ void UART3_Handler(void){
 // simple debouncing code: generate 20ms to 30ms delay
 for (uint32_t time=0;time<200000;time++) {}
 if (Mode2Flag){
-	if(!(color_recieved) && Mode2Flag){
 		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
         if ((UART3_FR_R&UART_FR_RXFE) == 0)
 					if ((UART3_DR_R&0xFF) == 0x5E){
-						Mode2Flag = false;	
+						Mode2Flag = false;
+						OutCRLF();
 					}
 					LED = UART3_DR_R&0xFF;
 					color_recieved = true;
 					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 			}
-		}
 	}
 }
 void GPIOPortF_Handler(void){	
