@@ -64,6 +64,7 @@ int main(void) {
 		System_Init();
     OutCRLF();		
 		while(1){
+			DisableInterrupts();
 			StartingDisplay();
 			switch(UART3_InChar()){
 				case '2':
@@ -93,20 +94,11 @@ void Mode2(void){
 			if(LED == color_wheel[i]){
 				colorIndex = i;
 			}
-		}
-		if (Mode2Flag == false){
-			LED = DARK;
-			return;
-		}
-		
+		}		
 		color_sent = false;
 		Mode2SendDisplay();
 		while(!color_sent && Mode2Flag){
 			WaitForInterrupt();
-		}
-		if (Mode2Flag == false){
-			LED = DARK;
-			return;
 		}
 	}
 }
@@ -125,13 +117,15 @@ for (uint32_t time=0;time<200000;time++) {}
 if (Mode2Flag){
 		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
         if ((UART3_FR_R&UART_FR_RXFE) == 0)
-					if ((UART3_DR_R&0xFF) == 0x5E){
-						Mode2Flag = false;
-						OutCRLF();
-					}
 					LED = UART3_DR_R&0xFF;
 					color_recieved = true;
 					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+					if ((UART3_DR_R&0xFF) == 0x5E){
+						LED = DARK;
+						Mode2Flag = false;
+						firstRound = true; 
+						OutCRLF();
+					}
 			}
 	}
 }
