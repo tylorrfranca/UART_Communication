@@ -62,3 +62,34 @@ void UART3_OutChar(uint8_t data){
   while((UART3_FR_R&UART_FR_TXFF) != 0);
   UART3_DR_R = data;
 }
+
+
+void UART3_InString(uint8_t *bufPt, uint16_t max) {
+int length=0;
+char character;
+  character = UART3_InChar();
+  while(character != CR){
+    if(character == BS){ // back space
+      if(length){
+        bufPt--;
+        length--;
+        UART3_OutChar(BS);
+      }
+    }
+    else if(length < max){
+      *bufPt = character;
+      bufPt++;
+      length++;
+      UART3_OutChar(character);
+    }
+    character = UART3_InChar();
+  }
+  *bufPt = 0; // adding null terminator to the end of the string.
+}
+
+void UART3_OutString(uint8_t *pt){
+  while(*pt){
+    UART3_OutChar(*pt);
+    pt++;
+  }
+}

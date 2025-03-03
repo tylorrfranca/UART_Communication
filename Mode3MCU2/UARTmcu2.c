@@ -1,5 +1,5 @@
 /*
-Project2MCU2Mode2
+Project2MCU2Mode3
 UARTmcu2.c
 Runs on LM4F120/TM4C123
 Starter File for CECS 447 Project 2 UART Communications
@@ -32,6 +32,7 @@ that will allow us to change the LED colors thorugh the onboard switches and wil
 
 #define SW1       0x10
 #define SW2       0x01
+#define MAX_STR_LEN 255
 
 uint8_t current_color;
 const	uint8_t color_wheel[8] = {DARK, RED, GREEN, BLUE, YELLOW, CRAN, PURPLE, WHITE};
@@ -47,6 +48,10 @@ bool Mode3Flag = false;
 bool color_sent = false;
 bool color_recieved = false; 
 bool firstRound = true; 
+bool messaage_sent = false;
+bool message_received = false;
+uint8_t string[MAX_STR_LEN];
+uint8_t string2[MAX_STR_LEN];
 
 
 extern void EnableInterrupts(void);
@@ -59,6 +64,7 @@ void Mode2SendDisplay(void);
 void Mode2ReceiveDisplay(void);
 void Mode2InitialDisplay(void);
 void StartingDisplay(void);
+void Mode3InitialDisplay(void);
 
 int main(void) {
 		System_Init();
@@ -69,6 +75,9 @@ int main(void) {
 			switch(UART3_InChar()){
 				case '2':
 					Mode2();
+					break;
+				case '3':
+					Mode3();
 					break;
 				default:
 					break;
@@ -105,10 +114,14 @@ void Mode2(void){
 
 
 void Mode3(void){
+	EnableInterrupts();
+	Mode3Flag = true;
+	Mode3InitialDisplay();
+	UART3_InString(string2,254);
+	OutCRLF();
+	UART_OutString((uint8_t*) string2);
 }
 
-void Beginning_Prompt(void){
-}
 
 
 void UART3_Handler(void){
@@ -128,6 +141,16 @@ if (Mode2Flag){
 					}
 			}
 	}
+if (Mode3Flag){
+		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
+			if ((UART3_FR_R&UART_FR_RXFE) == 0)
+			//do uart stuff here for messages
+			
+				if ((UART3_DR_R&0xFF) == '4'){
+				    Mode3Flag = false;
+				}
+		}
+	}
 }
 void GPIOPortF_Handler(void){	
 // simple debouncing code: generate 20ms to 30ms delay
@@ -146,6 +169,13 @@ if (!color_sent && Mode2Flag){
 			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
 			UART3_OutChar(LED);
 			color_sent = true;
+		}
+	}
+if (Mode3Flag){
+		if(GPIO_PORTF_RIS_R & SW1){ 		
+			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
+			Mode3Flag = false;
+			UART3_OutChar('4');
 		}
 	}
 }
@@ -204,4 +234,15 @@ void Mode2InitialDisplay(void){
 	OutCRLF();
   UART_OutString((uint8_t *)"Waiting for color code from MCU1 ...");
 	OutCRLF();
+}
+
+void Mode3InitialDisplay(void){
+	OutCRLF();
+  UART_OutString((uint8_t *)"Mode 3 MCU2: Chat Room");
+	OutCRLF();
+  UART_OutString((uint8_t *)"Press sw1 at any time to exit the chat room");
+	OutCRLF();
+	UART_OutString((uint8_t *)"Waiting for a message from MCU1");
+	OutCRLF();
+	
 }

@@ -33,6 +33,15 @@ File Description : This File is the function header file for UART.c
 #include <stdbool.h>  // for C boolean data type
 
 
+// standard ASCII symbols
+#define CR   0x0D
+#define LF   0x0A
+#define BS   0x08
+#define ESC  0x1B
+#define SP   0x20
+#define DEL  0x7F
+#define NULL 0
+
 // Initialize UART3 for inter–MCU communication at 38,400 bps.
 // RxInt and TxInt control whether receive/transmit interrupts are enabled.
 void UART3_INIT(bool RxInt, bool TxInt);
@@ -46,3 +55,6 @@ void UART3_OutChar(uint8_t data);
 // Returns true if data is available to be read from UART3.
 bool UART3_DataAvailable(void);
 
+void UART3_OutString(uint8_t *pt);
+void UART3_InString(uint8_t *bufPt, uint16_t max);
+	
