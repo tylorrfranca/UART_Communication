@@ -65,3 +65,35 @@ void UART2_OutChar(uint8_t data){
   while((UART2_FR_R&UART_FR_TXFF) != 0);
   UART2_DR_R = data;
 }
+
+
+void UART2_InString(uint8_t *bufPt, uint16_t max) {
+int length=0;
+char character;
+  character = UART2_InChar();
+  while(character != CR){
+    if(character == BS){ // back space
+      if(length){
+        bufPt--;
+        length--;
+        UART2_OutChar(BS);
+      }
+    }
+    else if(length < max){
+      *bufPt = character;
+      bufPt++;
+      length++;
+      UART2_OutChar(character);
+    }
+    character = UART2_InChar();
+  }
+  *bufPt = 0; // adding null terminator to the end of the string.
+}
+
+
+void UART2_OutString(uint8_t *pt){
+  while(*pt){
+    UART2_OutChar(*pt);
+    pt++;
+  }
+}

@@ -43,9 +43,14 @@ const uint8_t *colorNames[] = {
     };
 
 volatile int brightness = 100;
-bool color_recieved = false; 
+bool color_received = false; 
 bool color_sent = false; 
+bool message_sent = false; 
+bool message_received = false; 
 bool Mode2Flag = false; 
+bool Mode3Flag = false; 
+uint8_t string[255];
+uint8_t string2[255];
 
 // TODO: define bit addresses for the onboard three LEDs and two switches
 #define LEDs 		(0x0C)
@@ -131,9 +136,9 @@ void Mode1(void){
 void Mode2(void){
 	PWM_DISABLE();
 	PORTF_INIT();
+	UART2_OutChar('2');
 	EnableInterrupts();
 	Mode2Flag = true; 
-	UART2_OutChar('2');
 	while(Mode2Flag){
 		color_sent = false; 
 		mode2Display();
@@ -141,9 +146,9 @@ void Mode2(void){
 			WaitForInterrupt();
 		}
 		
-		color_recieved = false;
+		color_received = false;
 		mode2IdleDisplay();
-		while(!color_recieved && Mode2Flag){
+		while(!color_received && Mode2Flag){
 			WaitForInterrupt();
 		}
 		for(int i = 0; i < 8; i++){
@@ -156,6 +161,25 @@ void Mode2(void){
 }
 
 void Mode3(void){
+	UART2_OutChar('3');
+	EnableInterrupts();
+	Mode3Flag = true; 
+	while(Mode3Flag){
+//		message_sent = false; 
+//		//mode3Display();
+//		while(!message_sent && Mode3Flag){
+			UART_OutString((uint8_t *)" Please Write Message: ");
+			OutCRLF();
+			UART_InString(string, 254); 
+			OutCRLF();
+			UART2_OutString(string);
+//		}
+//		message_received = false;
+//		//mode3IdleDisplay();
+//		while(!message_received && Mode2Flag){
+//			WaitForInterrupt();
+//		}	
+	}
 }
 
 void Display_Menu(void){
@@ -397,14 +421,22 @@ void UART0_Handler(void){
 
 void UART2_Handler(void){
 	for(int i = 0; i < 200000; i++){}; // Delay for debounce
-  if(!color_recieved && Mode2Flag){       // received one item 
+  if(!color_received && Mode2Flag){       // received one item 
 		if(UART2_RIS_R&UART_RIS_RXRIS){
 			if ((UART2_FR_R&UART_FR_RXFE) == 0)
 				LED = UART2_DR_R & 0xFF;
 				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-				color_recieved = true;
+				color_received = true;
 		}
   }
+//	if(!message_received && Mode3Flag){       // received one item 
+//		if(UART2_RIS_R&UART_RIS_RXRIS){
+//			if ((UART2_FR_R&UART_FR_RXFE) == 0)
+//				string2 = UART2_DR_R & 0xFF;
+//				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+//				color_received = true;
+//		}
+//  }
 }
 
 
