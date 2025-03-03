@@ -170,7 +170,7 @@ void Mode3(void){
 //		while(!message_sent && Mode3Flag){
 			UART_OutString((uint8_t *)" Please Write Message: ");
 			OutCRLF();
-			UART_InString(string, 254); 
+			UART_InString(string, 20); 
 			OutCRLF();
 			UART2_OutString(string);
 //		}

@@ -32,7 +32,7 @@ that will allow us to change the LED colors thorugh the onboard switches and wil
 
 #define SW1       0x10
 #define SW2       0x01
-#define MAX_STR_LEN 255
+#define MAX_STR_LEN 20
 
 uint8_t current_color;
 const	uint8_t color_wheel[8] = {DARK, RED, GREEN, BLUE, YELLOW, CRAN, PURPLE, WHITE};
@@ -50,8 +50,11 @@ bool color_recieved = false;
 bool firstRound = true; 
 bool messaage_sent = false;
 bool message_received = false;
-uint8_t string[MAX_STR_LEN];
-uint8_t string2[MAX_STR_LEN];
+
+uint8_t receivedByte;
+		
+volatile uint8_t string[MAX_STR_LEN]; // Buffer for received data
+volatile uint8_t StringIndex = 0;           // Index to track buffer position
 
 
 extern void EnableInterrupts(void);
@@ -117,41 +120,49 @@ void Mode3(void){
 	EnableInterrupts();
 	Mode3Flag = true;
 	Mode3InitialDisplay();
-	UART3_InString(string2,254);
-	OutCRLF();
-	UART_OutString((uint8_t*) string2);
+	while(Mode3Flag){
+		WaitForInterrupt();
+	}
+
 }
 
 
 
 void UART3_Handler(void){
 // simple debouncing code: generate 20ms to 30ms delay
-for (uint32_t time=0;time<200000;time++) {}
-if (Mode2Flag){
-		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
-        if ((UART3_FR_R&UART_FR_RXFE) == 0)
-					LED = UART3_DR_R&0xFF;
-					color_recieved = true;
-					UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-					if ((UART3_DR_R&0xFF) == 0x5E){
-						LED = DARK;
-						Mode2Flag = false;
-						firstRound = true; 
-						OutCRLF();
-					}
-			}
-	}
-if (Mode3Flag){
-		if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
-			if ((UART3_FR_R&UART_FR_RXFE) == 0)
-			//do uart stuff here for messages
-			
-				if ((UART3_DR_R&0xFF) == '4'){
-				    Mode3Flag = false;
+	for (uint32_t time=0;time<200000;time++) {}
+	if (Mode2Flag){
+			if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
+					if ((UART3_FR_R&UART_FR_RXFE) == 0)
+						LED = UART3_DR_R&0xFF;
+						color_recieved = true;
+						UART3_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
+						if ((UART3_DR_R&0xFF) == 0x5E){
+							LED = DARK;
+							Mode2Flag = false;
+							firstRound = true; 
+							OutCRLF();
+						}
 				}
+		}
+	if (Mode3Flag){
+		if (UART3_RIS_R & UART_RIS_RXRIS) {  // Check if data is received
+			if ((UART3_FR_R & UART_FR_RXFE) == 0)  // While FIFO is not empty
+				receivedByte = UART3_DR_R & 0xFF;  // Read the received byte
+				 // Check for termination character (new line) or buffer overflow
+				if (receivedByte == '\n' || StringIndex >= 19) {
+					string[StringIndex] = '\0'; // Null-terminate the string
+					UART_OutString((uint8_t*)string);
+					StringIndex = 0;  // Reset index for next message
+										// Process received message here (e.g., parse rxBuffer)
+				} else{
+						string[StringIndex++] = receivedByte; // Store received byte
+				}
+				UART3_ICR_R = UART_ICR_RXIC;  // Clear interrupt flag
 		}
 	}
 }
+
 void GPIOPortF_Handler(void){	
 // simple debouncing code: generate 20ms to 30ms delay
 for (uint32_t time=0;time<200000;time++) {}
@@ -175,7 +186,6 @@ if (Mode3Flag){
 		if(GPIO_PORTF_RIS_R & SW1){ 		
 			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
 			Mode3Flag = false;
-			UART3_OutChar('4');
 		}
 	}
 }
