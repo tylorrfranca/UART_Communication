@@ -131,9 +131,9 @@ void Mode1(void){
 void Mode2(void){
 	PWM_DISABLE();
 	PORTF_INIT();
+	UART2_OutChar('2');
 	EnableInterrupts();
 	Mode2Flag = true; 
-	UART2_OutChar('2');
 	while(Mode2Flag){
 		color_sent = false; 
 		mode2Display();
