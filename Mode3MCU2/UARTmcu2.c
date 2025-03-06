@@ -48,12 +48,12 @@ bool Mode3Flag = false;
 bool color_sent = false;
 bool color_recieved = false; 
 bool firstRound = true; 
-bool messaage_sent = false;
+bool message_sent = false;
 bool message_received = false;
-
 uint8_t receivedByte;
 		
-volatile uint8_t string[MAX_STR_LEN]; // Buffer for received data
+uint8_t string[MAX_STR_LEN]; // Buffer for received data
+uint8_t string2[MAX_STR_LEN];
 volatile uint8_t StringIndex = 0;           // Index to track buffer position
 
 
@@ -67,7 +67,9 @@ void Mode2SendDisplay(void);
 void Mode2ReceiveDisplay(void);
 void Mode2InitialDisplay(void);
 void StartingDisplay(void);
-void Mode3InitialDisplay(void);
+void mode3IdleDisplay();
+void mode3SendDisplay();
+void mode3InitialDisplay();
 
 int main(void) {
 		System_Init();
@@ -119,9 +121,21 @@ void Mode2(void){
 void Mode3(void){
 	EnableInterrupts();
 	Mode3Flag = true;
-	Mode3InitialDisplay();
+	mode3InitialDisplay();
 	while(Mode3Flag){
-		WaitForInterrupt();
+		message_received = false;
+		mode3IdleDisplay();
+		while(Mode3Flag && !message_received){
+			WaitForInterrupt();
+		}
+		message_sent = false; 
+		mode3SendDisplay();
+		while(Mode3Flag && !message_sent){
+			UART_InString(string, 20); 
+			UART3_OutString(string);
+			UART3_OutChar(CR);
+			message_sent = true;
+		}
 	}
 
 }
@@ -129,8 +143,6 @@ void Mode3(void){
 
 
 void UART3_Handler(void){
-// simple debouncing code: generate 20ms to 30ms delay
-	for (uint32_t time=0;time<200000;time++) {}
 	if (Mode2Flag){
 			if(UART3_RIS_R&UART_RIS_RXRIS){       // received one item
 					if ((UART3_FR_R&UART_FR_RXFE) == 0)
@@ -147,21 +159,27 @@ void UART3_Handler(void){
 		}
 	if (Mode3Flag){
 		if (UART3_RIS_R & UART_RIS_RXRIS) {  // Check if data is received
-			if ((UART3_FR_R & UART_FR_RXFE) == 0)  // While FIFO is not empty
+			if ((UART3_FR_R & UART_FR_RXFE) == 0){  // While FIFO is not empty
 				receivedByte = UART3_DR_R & 0xFF;  // Read the received byte
 				 // Check for termination character (new line) or buffer overflow
-				if (receivedByte == '\n' || StringIndex >= 19) {
-					string[StringIndex] = '\0'; // Null-terminate the string
-					UART_OutString((uint8_t*)string);
+				if (receivedByte == CR || StringIndex >= 20) {
+					message_received = true; 
+					string2[StringIndex] = '\0'; // Null-terminate the string
 					StringIndex = 0;  // Reset index for next message
-										// Process received message here (e.g., parse rxBuffer)
-				} else{
-						string[StringIndex++] = receivedByte; // Store received byte
+					UART_OutString((uint8_t*)string2);
+					OutCRLF();
 				}
-				UART3_ICR_R = UART_ICR_RXIC;  // Clear interrupt flag
+				string2[StringIndex] = receivedByte; // Store received byte
+				++StringIndex;
+				UART3_ICR_R = UART_ICR_RXIC;
+				  // Clear interrupt flag
+				}
+					
+			}
 		}
-	}
+	UART3_ICR_R = UART_ICR_RXIC;
 }
+
 
 void GPIOPortF_Handler(void){	
 // simple debouncing code: generate 20ms to 30ms delay
@@ -185,6 +203,7 @@ if (!color_sent && Mode2Flag){
 if (Mode3Flag){
 		if(GPIO_PORTF_RIS_R & SW1){ 		
 			GPIO_PORTF_ICR_R = 0x10;  // Acknowledge flag
+			UART3_OutChar('^');
 			Mode3Flag = false;
 		}
 	}
@@ -246,13 +265,21 @@ void Mode2InitialDisplay(void){
 	OutCRLF();
 }
 
-void Mode3InitialDisplay(void){
+void mode3InitialDisplay(void){
 	OutCRLF();
   UART_OutString((uint8_t *)"Mode 3 MCU2: Chat Room");
 	OutCRLF();
   UART_OutString((uint8_t *)"Press sw1 at any time to exit the chat room");
 	OutCRLF();
-	UART_OutString((uint8_t *)"Waiting for a message from MCU1");
+	UART_OutString((uint8_t *)"Waiting for a message from MCU1...");
 	OutCRLF();
-	
+}
+
+
+void mode3SendDisplay(){
+	UART_OutString((uint8_t *)" You: ");
+}
+
+void mode3IdleDisplay(){
+	UART_OutString((uint8_t *)" MCU1: ");
 }

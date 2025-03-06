@@ -69,26 +69,19 @@ int length=0;
 char character;
   character = UART3_InChar();
   while(character != CR){
-    if(character == BS){ // back space
-      if(length){
-        bufPt--;
-        length--;
-        UART3_OutChar(BS);
-      }
-    }
-    else if(length < max){
+    if(length < max){
       *bufPt = character;
       bufPt++;
       length++;
-      UART3_OutChar(character);
     }
     character = UART3_InChar();
   }
-  *bufPt = 0; // adding null terminator to the end of the string.
+  *bufPt = '\0'; // adding null terminator to the end of the string.
 }
 
 void UART3_OutString(uint8_t *pt){
   while(*pt){
+		for(int i = 0; i < 10000; i++){}
     UART3_OutChar(*pt);
     pt++;
   }

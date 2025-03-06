@@ -16,6 +16,7 @@ and an interactive color selection mode.
 #include "UART2.h"
 #include "LEDSW.h"
 #include "tm4c123gh6pm.h"
+#include <string.h>
 
 #define MAX_STR_LEN 20
 
@@ -49,8 +50,15 @@ bool message_sent = false;
 bool message_received = false; 
 bool Mode2Flag = false; 
 bool Mode3Flag = false; 
-uint8_t string[255];
-uint8_t string2[255];
+uint8_t string[20];
+uint8_t string2[20];
+		
+uint8_t receivedByte;
+		
+uint8_t string[MAX_STR_LEN]; // Buffer for received data
+uint8_t string2[MAX_STR_LEN];
+volatile uint8_t StringIndex = 0; 
+		
 
 // TODO: define bit addresses for the onboard three LEDs and two switches
 #define LEDs 		(0x0C)
@@ -71,11 +79,16 @@ void BrightnessMenu(void);
 void setColorAndBrightness(void);
 void waitDisplay(void);
 void mode2Display(void);
+void mode3IdleDisplay();
+void mode3SendDisplay();
+void mode3InitialDisplay();
 
 
 volatile uint8_t currentColor;
 volatile uint8_t colorIndex = 0; 
 bool onScreen;
+
+
 
 int main(void){
 	DisableInterrupts();
@@ -163,22 +176,23 @@ void Mode2(void){
 void Mode3(void){
 	UART2_OutChar('3');
 	EnableInterrupts();
-	Mode3Flag = true; 
+	Mode3Flag = true;
+	mode3InitialDisplay();
 	while(Mode3Flag){
-//		message_sent = false; 
-//		//mode3Display();
-//		while(!message_sent && Mode3Flag){
-			UART_OutString((uint8_t *)" Please Write Message: ");
-			OutCRLF();
+		message_sent = false; 
+		mode3SendDisplay();
+		while(!message_sent && Mode3Flag){
 			UART_InString(string, 20); 
-			OutCRLF();
 			UART2_OutString(string);
-//		}
-//		message_received = false;
-//		//mode3IdleDisplay();
-//		while(!message_received && Mode2Flag){
-//			WaitForInterrupt();
-//		}	
+			UART2_OutChar(CR);
+			message_sent = true;
+		}
+		message_received = false;
+		mode3IdleDisplay();
+		while(!message_received && Mode3Flag){
+			WaitForInterrupt();
+		}
+		OutCRLF();
 	}
 }
 
@@ -353,6 +367,28 @@ void BrightnessMenu(){
 	setColorAndBrightness();
 }
 
+void mode3SendDisplay(){
+	UART_OutString((uint8_t *)" You: ");
+}
+
+void mode3IdleDisplay(){
+	UART_OutString((uint8_t *)" MCU2: ");
+}
+
+void mode3InitialDisplay(){
+	UART_OutString((uint8_t *)" Mode 3 MCU 1: Chat Room");
+  OutCRLF();
+	OutCRLF();
+	UART_OutString((uint8_t *)" Press SW1 at any time to exit");
+  OutCRLF();
+	OutCRLF();
+	UART_OutString((uint8_t *)" Type your message and end with a return");
+  OutCRLF();
+	OutCRLF();
+	UART_OutString((uint8_t *)" (Less than 20 characters): ");
+  OutCRLF();
+}
+
 void setColorAndBrightness(void){
 			switch(currentColor){
 		case GREEN:
@@ -404,23 +440,29 @@ void GPIOPortF_Handler(void) {
 					color_sent = true;
 			}
 		}
+		if(Mode3Flag){
+			if (GPIO_PORTF_RIS_R & 0x10) {
+				GPIO_PORTF_ICR_R = 0x10;
+				UART2_OutChar('^');
+				Mode3Flag = false; 
+			}
+		}
 	}
 
 void UART0_Handler(void){
-  if(UART0_RIS_R&UART_RIS_RXRIS){       // received one item
-		if ((UART0_FR_R&UART_FR_RXFE) == 0)
-		   if((UART0_DR_R & 0xFF) == '^'){
-					UART2_OutChar('^');
-					Mode2Flag = false;
-					
-			 }
-    UART0_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-  }
-			
+	if(Mode2Flag){
+		if(UART0_RIS_R&UART_RIS_RXRIS){       // received one item
+			if ((UART0_FR_R&UART_FR_RXFE) == 0)
+				 if((UART0_DR_R & 0xFF) == '^'){
+						UART2_OutChar('^');
+						Mode2Flag = false;
+				 }
+			}
+		}
+	UART0_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 }
 
 void UART2_Handler(void){
-	for(int i = 0; i < 200000; i++){}; // Delay for debounce
   if(!color_received && Mode2Flag){       // received one item 
 		if(UART2_RIS_R&UART_RIS_RXRIS){
 			if ((UART2_FR_R&UART_FR_RXFE) == 0)
@@ -428,16 +470,37 @@ void UART2_Handler(void){
 				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
 				color_received = true;
 		}
-  }
-//	if(!message_received && Mode3Flag){       // received one item 
-//		if(UART2_RIS_R&UART_RIS_RXRIS){
-//			if ((UART2_FR_R&UART_FR_RXFE) == 0)
-//				string2 = UART2_DR_R & 0xFF;
-//				UART2_ICR_R = UART_ICR_RXIC;        // acknowledge RX FIFO
-//				color_received = true;
-//		}
-//  }
-}
+	}
+	if (Mode3Flag && !message_received){
+		if (UART2_RIS_R & UART_RIS_RXRIS) {  // Check if data is received
+			if ((UART2_FR_R & UART_FR_RXFE) == 0){  // While FIFO is not empty
+				receivedByte = UART2_DR_R & 0xFF;  // Read the received byte
+				 // Check for termination character (new line) or buffer overflow
+				if (receivedByte == CR || StringIndex >= 20) {
+					message_received = true; 
+					string2[StringIndex] = '\0'; // Null-terminate the string
+					StringIndex = 0;  // Reset index for next message
+					UART_OutString((uint8_t*)string2);
+				}
+				string2[StringIndex] = receivedByte; // Store received byte
+				++StringIndex;
+				UART2_ICR_R = UART_ICR_RXIC;
+				  // Clear interrupt flag
+				}
+					
+			}
+		}
+	UART2_ICR_R = UART_ICR_RXIC; 
+	}
+	
+//	if(Mode3Flag){
+//		if ((UART2_DR_R&0xFF) == 0x5E){ // if mcu1 presses sw1 and sends '^' key get out of mode 3
+//		Mode3Flag = false;
+//	}
+
+		       // acknowledge RX FIFO
+//	}
+//}
 
 
 

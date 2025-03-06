@@ -72,28 +72,25 @@ int length=0;
 char character;
   character = UART2_InChar();
   while(character != CR){
-    if(character == BS){ // back space
-      if(length){
-        bufPt--;
-        length--;
-        UART2_OutChar(BS);
-      }
-    }
-    else if(length < max){
+    if(length < max){
       *bufPt = character;
       bufPt++;
       length++;
-      UART2_OutChar(character);
     }
     character = UART2_InChar();
   }
-  *bufPt = 0; // adding null terminator to the end of the string.
+  *bufPt = '\0'; // adding null terminator to the end of the string.
 }
 
 
 void UART2_OutString(uint8_t *pt){
   while(*pt){
+		for(int i = 0; i < 10000; i++){}
     UART2_OutChar(*pt);
     pt++;
   }
+}
+
+void Out2CRLF(void){
+  UART2_OutChar(CR);
 }
