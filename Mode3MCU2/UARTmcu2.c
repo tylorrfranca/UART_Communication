@@ -70,6 +70,7 @@ void StartingDisplay(void);
 void mode3IdleDisplay();
 void mode3SendDisplay();
 void mode3InitialDisplay();
+void UART0_InStringMode3(uint8_t *bufPt, uint16_t max);
 
 int main(void) {
 		System_Init();
@@ -125,17 +126,25 @@ void Mode3(void){
 	while(Mode3Flag){
 		message_received = false;
 		mode3IdleDisplay();
+		OutCRLF();
+		for(int i = 0; i < 2000000; i++){}
 		while(Mode3Flag && !message_received){
 			WaitForInterrupt();
 		}
+		OutCRLF();
+		OutCRLF();
 		message_sent = false; 
 		mode3SendDisplay();
-		while(Mode3Flag && !message_sent){
-			UART_InString(string, 20); 
+		OutCRLF();
+		for(int j = 0; j < 2000000; j++){}
+		if(Mode3Flag && !message_sent){
+			UART_InString(string, 20);  
 			UART3_OutString(string);
 			UART3_OutChar(CR);
 			message_sent = true;
 		}
+		OutCRLF();
+		OutCRLF();
 	}
 
 }
@@ -173,6 +182,9 @@ void UART3_Handler(void){
 				++StringIndex;
 				UART3_ICR_R = UART_ICR_RXIC;
 				  // Clear interrupt flag
+				}
+				if((UART3_DR_R & 0xFF) == '^'){
+					Mode3Flag = false;
 				}
 					
 			}
@@ -282,4 +294,23 @@ void mode3SendDisplay(){
 
 void mode3IdleDisplay(){
 	UART_OutString((uint8_t *)" MCU1: ");
+}
+
+void UART0_InStringMode3(uint8_t *bufPt, uint16_t max) {
+	int length=0;
+	char character;
+  character = UART_InChar();
+  while(character != CR){
+		if (!Mode3Flag) {  // If SW1 was pressed, exit
+			bufPt[0] = '\0';  // Return empty string
+			return;
+     }
+    if(length < max){
+      *bufPt = character;
+      bufPt++;
+      length++;
+    }
+    character = UART_InChar();
+  }
+  *bufPt = '\0'; // adding null terminator to the end of the string.
 }
